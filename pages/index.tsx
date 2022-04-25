@@ -1,8 +1,12 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-const Home: NextPage = () => {
+const Home: NextPage<
+  Awaited<ReturnType<typeof getServerSideProps>>["props"]
+> = ({ users }) => {
   return (
     <>
       <Head>
@@ -12,12 +16,31 @@ const Home: NextPage = () => {
       </Head>
 
       <main>
-        <h1>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+        <h1 className="font-medium text-slate-900">
+          Welcome to a simple Next JS app using a GraphQL / Prisma / MySQL
+          backend
         </h1>
+        <ul>
+          {users &&
+            users.map((user) => (
+              <li key={user.id}>
+                <Link href={`/user/${user.id}`}>{user.name}</Link>
+              </li>
+            ))}
+        </ul>
       </main>
     </>
   );
 };
 
 export default Home;
+
+export async function getServerSideProps() {
+  const users = await prisma.user.findMany();
+
+  return {
+    props: {
+      users,
+    },
+  };
+}
